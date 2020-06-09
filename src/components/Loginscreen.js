@@ -26,30 +26,44 @@ const SignInScreen = ({navigation}) => {
         check_textInputChange: false,
         secureTextEntry: true,
         confirm_secureTextEntry: true,
+        isValidUser: true,
+        isValidPassword: true,
     });
 
     const { signIn } = React.useContext(AuthContext);
     const textInputChange = (val) => {
-        if( val.length !== 0 ) {
+        if( val.trim().length >= 4 ) {
             setData({
                 ...data,
                 username: val,
-                check_textInputChange: true
+                check_textInputChange: true,
+                isValidUser: true
             });
         } else {
             setData({
                 ...data,
                 username: val,
-                check_textInputChange: false
+                check_textInputChange: false,
+                isValidUser: false
             });
         }
+        
     }
 
     const handlePasswordChange = (val) => {
-        setData({
-            ...data,
-            password: val
-        });
+        if( val.trim().length >= 8 ) {
+            setData({
+                ...data,
+                password: val,
+                isValidPassword: true
+            });
+        } else {
+            setData({
+                ...data,
+                password: val,
+                isValidPassword: false
+            });
+        }
     }
 
 
@@ -61,32 +75,57 @@ const SignInScreen = ({navigation}) => {
     }
 
  
+    const handleValidUser = (val) => {
+        if( val.trim().length >= 4 ) {
+            setData({
+                ...data,
+                isValidUser: true
+            });
+        } else {
+            setData({
+                ...data,
+                isValidUser: false
+            });
+        }
+    }
+
    const login=(username,password)=>{
+    
+    if ( data.username.length == 0 || data.password.length == 0 ) {
+        Alert.alert('Wrong Input!', 'Username or password field cannot be empty.', [
+            {text: 'Ok'}
+        ]);
+        return;
+    }
         firebase.auth().signInWithEmailAndPassword(username,password)
         .then(() => firebase.auth().onAuthStateChanged(function(user){
             if(user){
                 signIn(user)
             }
+           
         }))
         .catch(error=>{
             Alert.alert(error.message)})
-
+        
+        
         // signIn();
     }
     return (
       <View style={styles.container}>
+
           <StatusBar backgroundColor='#445BFB' barStyle="light-content"/>
-        {/* <View style={styles.header}> */}
+
             <LinearGradient
                     colors={['#445BFB', '#01ab9d']}
                     style={styles.header}
                 >
             <Text style={styles.text_header}>Let`s Start!</Text>
             </LinearGradient>
-        <Animatable.View 
-            animation="fadeInUpBig"
-            style={styles.footer}
-        >
+
+            <Animatable.View 
+                animation="fadeInUpBig"
+                style={styles.footer}
+            >
             <ScrollView>
             <Text style={styles.text_footer}>Username</Text>
             <View style={styles.action}>
@@ -100,6 +139,7 @@ const SignInScreen = ({navigation}) => {
                     style={styles.textInput}
                     autoCapitalize="none"
                     onChangeText={(val) => textInputChange(val)}
+                    onEndEditing={(e)=>handleValidUser(e.nativeEvent.text)}
                 />
                 {data.check_textInputChange ? 
                 <Animatable.View
@@ -113,6 +153,11 @@ const SignInScreen = ({navigation}) => {
                 </Animatable.View>
                 : null}
             </View>
+            { data.isValidUser ? null : 
+            <Animatable.View animation="fadeInLeft" duration={500}>
+            <Text style={{ color: '#FF0000',fontSize: 14}}>Username must be 4 characters long.</Text>
+            </Animatable.View>
+            }
 
             <Text style={[styles.text_footer, {
                 marginTop: 10
@@ -148,6 +193,15 @@ const SignInScreen = ({navigation}) => {
                     }
                 </TouchableOpacity>
             </View>
+            { data.isValidPassword ? null : 
+            <Animatable.View animation="fadeInLeft" duration={500}>
+            <Text style={{color: '#FF0000',fontSize: 14}}>Password must be 8 characters long.</Text>
+            </Animatable.View>
+            }
+
+            <TouchableOpacity>
+                <Text style={{color: '#009387', marginTop:15}}>Forgot password?</Text>
+            </TouchableOpacity>
 
                 <View style={styles.button}>
                 <TouchableOpacity

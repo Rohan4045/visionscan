@@ -105,17 +105,7 @@ const RootStack = createStackNavigator();
   const authContext = React.useMemo(() => ({
     signIn: async(user) => {
       const userToken = user.email;
-      // const userToken =  firebase.auth().onAuthStateChanged(function(user) {
-      //   if (user) {
-          
-      //     user.getIdToken().then(function(idToken) {  // <------ Check this line
-      //       // userToken=String(idToken);
-      //         // alert(idToken); // It shows the Firebase token now
-      //         return idToken;
-      //     });
-      //   }
-      // });
-      // console.log("userTok",userToken)
+      
       
       try {
         await AsyncStorage.setItem('userToken', userToken);
