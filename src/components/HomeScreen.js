@@ -10,13 +10,13 @@ const GOOGLE_REDIRECT_URI = 'http://localhost';
 
 const HomeScreen = ({ navigation }) => (
   <View style={styles.container}>
-      <GoogleSheet
+      {/* <GoogleSheet
         credentialsDetails={{
         redirectUrl: GOOGLE_REDIRECT_URI,
         clientId,
         }}
         // spreadsheetId='1HJMwaKCAgdZO32jjZludFXCRIzv02es01z-w2fxFhsE'
-      /> 
+      />  */}
     <StatusBar backgroundColor='#445BFB' barStyle="dark-content"/>
     <Text style={styles.title}>Welcome to VisionScan : Meter Reading App</Text>
     <Text style={styles.instructions}>

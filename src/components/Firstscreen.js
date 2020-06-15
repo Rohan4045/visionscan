@@ -37,7 +37,7 @@ export default class Firstscreen extends React.Component{
             <LinearGradient colors={['#445BFF','#4B59B6']}>
             <Text style={{textAlign:"center",color:"white",fontSize:20,padding:10}}> Create New Account </Text>  
             </LinearGradient>
-
+                                                                
             </TouchableOpacity>
             <TouchableOpacity onPress={()=>this.props.navigation.navigate("Login")}>
             

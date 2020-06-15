@@ -106,10 +106,8 @@ const RootStack = createStackNavigator();
     signIn: async(user) => {
       const userToken = user.email;
       
-      
       try {
         await AsyncStorage.setItem('userToken', userToken);
-        console.log("aync",userToken)
       } catch(e) {
         console.log(e);
       }
@@ -143,8 +141,22 @@ const RootStack = createStackNavigator();
       } catch(e) {
         console.log(e);
       }
+      await firebase.auth().onAuthStateChanged(function(user){
+        if(user){
+            if(user.displayName == null){
+              user.updateProfile({
+                displayName: "USER"
+              })
+            }
+        }
+      })
+        // if(user.displayName = null){
+        //   user.updateProfile({
+        //     displayName: "user"
+        //   }).then(console.log("e"),ok)
+        // }
+      
 
-      // console.log('user token: ', userToken);
       dispatch({ type: 'RETRIEVE_TOKEN', token: userToken });
     };
     bootstrapAsync();
@@ -157,7 +169,6 @@ const RootStack = createStackNavigator();
       </View>
     );
   }
-  // console.log("login",loginState.userToken)
   return (
     
     <PaperProvider> 

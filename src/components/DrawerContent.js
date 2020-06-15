@@ -1,17 +1,21 @@
 import {
-    
+    Avatar,
     Drawer,
     Text,
-   
+    Title,
+    Caption,
 } from 'react-native-paper';
 import React, { useState, useEffect }  from 'react';
-import { View, StyleSheet } from 'react-native';
-
+import { View, StyleSheet , Image} from 'react-native';
+// import {Avatar,Icon as icon1} from 'react-native-elements';
 import {
     DrawerContentScrollView,
     DrawerItem
 } from '@react-navigation/drawer';
 import * as firebase from 'firebase';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-community/async-storage';
+
 import { AuthContext } from '../../components/content';
 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -19,21 +23,37 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 
 export function DrawerContent(props) {
-    const [username,setusername]=useState("");
+    const [data, setdata]=useState({
+        username: null,
+        email:"",
+        photourl:null
+    });
+
     useEffect(()=> {
-    const user = firebase.auth().currentUser;
-    
-    if(user != null){
-        
-      ()=> setusername(user.email);
-    
-    }
-    })
-    // const user = firebase.auth().currentUser;
-    // if(user != null){
-    //   ()=> setusername(user.email);
-        
-    // }
+        const bootstrapasync = async() => {
+            let user=null;
+            user=await firebase.auth().currentUser;
+            if(user != null){
+               
+                setdata({
+                    ...data,
+                    username: user.displayName,
+                    email: user.email,
+                    photourl: user.photoURL
+                    
+                })
+            }
+            
+            //     setdata({
+                            
+            //                 username:  await AsyncStorage.getItem('username'),
+            //                 email: await AsyncStorage.getItem('userToken')
+            //             })
+             
+            };
+          bootstrapasync();
+        },[]);
+ 
     const { signOut } = React.useContext(AuthContext);
 
     const signout = () => {
@@ -48,10 +68,14 @@ export function DrawerContent(props) {
             <DrawerContentScrollView {...props}>
                 <View style={styles.drawerContent}>
                     <View style={styles.userInfoSection}>
-                        <View style={{marginTop: 15}}>
-                            <Text style={styles.title}>Welcome </Text>  
-                            <Text style={styles.title}>{username}</Text>
-                        </View>     
+                    <View style={{flexDirection:'row',marginTop: 15}}>
+                    <Avatar.Icon size={80} icon="account" color="#fff" style={{backgroundColor:"#445BFB"}}/>
+
+                        <View style={{marginLeft:15,marginTop:15, flexDirection:'column'}}>
+                            <Title style={styles.title}>{data.username}</Title>
+                            <Caption style={styles.caption}>{data.email}</Caption>
+                        </View>
+                        </View>   
                     </View>
 
                     <Drawer.Section style={styles.drawerSection}>
@@ -74,13 +98,13 @@ export function DrawerContent(props) {
                                 size={size}
                                 />
                             )}
-                            label="Reading"
+                            label="Readings"
                             onPress={() => {props.navigation.navigate('Reading')}}
                         />
                         <DrawerItem 
                             icon={({color, size}) => (
                                 <Icon 
-                                name="account-outline" 
+                                name="account-details" 
                                 color={color}
                                 size={size}
                                 />
@@ -88,8 +112,8 @@ export function DrawerContent(props) {
                             label="Profile"
                             onPress={() => {props.navigation.navigate('Profile')}}
                         />
-                        {/* 
-                        <DrawerItem 
+                        
+                        {/* <DrawerItem 
                             icon={({color, size}) => (
                                 <Icon 
                                 name="bookmark-outline" 
@@ -99,7 +123,7 @@ export function DrawerContent(props) {
                             )}
                             label="Bookmarks"
                             onPress={() => {props.navigation.navigate('BookmarkScreen')}}
-                        />
+                        /> */}
                         <DrawerItem 
                             icon={({color, size}) => (
                                 <Icon 
@@ -121,7 +145,7 @@ export function DrawerContent(props) {
                             )}
                             label="Support"
                             onPress={() => {props.navigation.navigate('SupportScreen')}}
-                        />*/}
+                        /> 
                     </Drawer.Section>
                      
                 </View>

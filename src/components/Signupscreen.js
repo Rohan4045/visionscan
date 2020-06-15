@@ -31,7 +31,7 @@ const SignInScreen = ({navigation}) => {
     });
     const [isLoading,setisLoading] = React.useState(false);
     const textInputChange = (val) => {
-        if( val.length !== 0 ) {
+        if( val.length !== 0) {
             setData({
                 ...data,
                 username: val,

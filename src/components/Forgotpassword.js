@@ -8,64 +8,57 @@ import {
     StyleSheet,
     ScrollView,
     StatusBar,
-    Alert
+    Alert,
+    AsyncStorage,
+    ActivityIndicator
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { AuthContext } from '../../components/content';
-
 import Feather from 'react-native-vector-icons/Feather';
 import * as firebase from 'firebase';
 
-const SignInScreen = ({navigation}) => {
+const ForgotPassword = ({navigation}) => {
 
     const [data, setData] = React.useState({
-        username: '',
+        userpassword: '',
         password: '',
+        confirm_password: '',
         check_textInputChange: false,
         secureTextEntry: true,
         confirm_secureTextEntry: true,
-        isValidUser: true,
-        isValidPassword: true,
+        userdata:{}
     });
-
-    const { signIn } = React.useContext(AuthContext);
+    const [isLoading,setisLoading] = React.useState(false);
     const textInputChange = (val) => {
-        if( val.trim().length >= 4 ) {
+        if( val.length !== 0) {
             setData({
                 ...data,
                 username: val,
-                check_textInputChange: true,
-                isValidUser: true
+                check_textInputChange: true
             });
         } else {
             setData({
                 ...data,
                 username: val,
-                check_textInputChange: false,
-                isValidUser: false
+                check_textInputChange: false
             });
         }
-        
     }
 
     const handlePasswordChange = (val) => {
-        if( val.trim().length >= 8 ) {
-            setData({
-                ...data,
-                password: val,
-                isValidPassword: true
-            });
-        } else {
-            setData({
-                ...data,
-                password: val,
-                isValidPassword: false
-            });
-        }
+        setData({
+            ...data,
+            password: val
+        });
     }
 
+    const handleConfirmPasswordChange = (val) => {
+        setData({
+            ...data,
+            confirm_password: val
+        });
+    }
 
     const updateSecureTextEntry = () => {
         setData({
@@ -74,61 +67,49 @@ const SignInScreen = ({navigation}) => {
         });
     }
 
- 
-    const handleValidUser = (val) => {
-        if( val.trim().length >= 4 ) {
-            setData({
-                ...data,
-                isValidUser: true
-            });
-        } else {
-            setData({
-                ...data,
-                isValidUser: false
-            });
-        }
+    const updateConfirmSecureTextEntry = () => {
+        setData({
+            ...data,
+            confirm_secureTextEntry: !data.confirm_secureTextEntry
+        });
     }
 
-   const login=(username,password)=>{
-    
-    if ( data.username.length == 0 || data.password.length == 0 ) {
-        Alert.alert('Wrong Input!', 'Username or password field cannot be empty.', [
-            {text: 'Ok'}
-        ]);
-        return;
+    storeToken = async(user) => {
+        try{
+            await AsyncStorage.setItem("userdata",JSON.stringify(user));
+        }catch(error) {
+                console.log("Something went wrong", error);
+        }
     }
-        firebase.auth().signInWithEmailAndPassword(username,password)
-        .then(() => firebase.auth().onAuthStateChanged(function(user){
-            if(user){
-              
-                signIn(user)
-                
-               
-            }
-           
-        }))
+ 
+    const signup=(username,password,confirm_password)=>{
+        
+        if(password==confirm_password){
+        
+        firebase.auth().createUserWithEmailAndPassword(username,password)
+       
+        
+        .then(()=>{navigation.replace("Login")})
         .catch(error=>{
             Alert.alert(error.message)})
-        
-        
-        // signIn();
+        } else{
+            Alert.alert("password mismatch")
+        }
     }
     return (
       <View style={styles.container}>
-
           <StatusBar backgroundColor='#445BFB' barStyle="light-content"/>
-
-            <LinearGradient
-                    colors={['#445BFB', '#01ab9d']}
-                    style={styles.header}
+        {/* <View style={styles.header}> */}
+                <LinearGradient
+                colors={['#445BFB', '#01ab9d']}
+                style={styles.header}
                 >
-            <Text style={styles.text_header}>Let`s Start!</Text>
+            <Text style={styles.text_header}>Register Now!</Text>
             </LinearGradient>
-
-            <Animatable.View 
-                animation="fadeInUpBig"
-                style={styles.footer}
-            >
+        <Animatable.View 
+            animation="fadeInUpBig"
+            style={styles.footer}
+        >
             <ScrollView>
             <Text style={styles.text_footer}>Username</Text>
             <View style={styles.action}>
@@ -142,7 +123,6 @@ const SignInScreen = ({navigation}) => {
                     style={styles.textInput}
                     autoCapitalize="none"
                     onChangeText={(val) => textInputChange(val)}
-                    onEndEditing={(e)=>handleValidUser(e.nativeEvent.text)}
                 />
                 {data.check_textInputChange ? 
                 <Animatable.View
@@ -156,11 +136,6 @@ const SignInScreen = ({navigation}) => {
                 </Animatable.View>
                 : null}
             </View>
-            { data.isValidUser ? null : 
-            <Animatable.View animation="fadeInLeft" duration={500}>
-            <Text style={{ color: '#FF0000',fontSize: 14}}>Username must be 4 characters long.</Text>
-            </Animatable.View>
-            }
 
             <Text style={[styles.text_footer, {
                 marginTop: 10
@@ -189,6 +164,41 @@ const SignInScreen = ({navigation}) => {
                     />
                     :
                     <Feather 
+                        name = "eye"
+                        color = "grey"
+                        size={20}
+                    />
+                    }
+                </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.text_footer, {
+                marginTop: 10
+            }]}>Confirm Password</Text>
+            <View style={styles.action}>
+                <Feather 
+                    name="lock"
+                    color="#05375a"
+                    size={20}
+                />
+                <TextInput 
+                    placeholder="Confirm Your Password"
+                    secureTextEntry={data.confirm_secureTextEntry ? true : false}
+                    style={styles.textInput}
+                    autoCapitalize="none"
+                    onChangeText={(val) => handleConfirmPasswordChange(val)}
+                />
+                <TouchableOpacity
+                    onPress={updateConfirmSecureTextEntry}
+                >
+                    {data.secureTextEntry ? 
+                    <Feather 
+                        name="eye-off"
+                        color="grey"
+                        size={20}
+                    />
+                    :
+                    <Feather 
                         name="eye"
                         color="grey"
                         size={20}
@@ -196,20 +206,18 @@ const SignInScreen = ({navigation}) => {
                     }
                 </TouchableOpacity>
             </View>
-            { data.isValidPassword ? null : 
-            <Animatable.View animation="fadeInLeft" duration={500}>
-            <Text style={{color: '#FF0000',fontSize: 14}}>Password must be 8 characters long.</Text>
-            </Animatable.View>
-            }
-
-            <TouchableOpacity>
-                <Text style={{color: '#009387', marginTop:15}}>Forgot password?</Text>
-            </TouchableOpacity>
-
-                <View style={styles.button}>
+            <View style={styles.textPrivate}>
+                <Text style={styles.color_textPrivate}>
+                    By signing up you agree to our
+                </Text>
+                <Text style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>{" "}Terms of service</Text>
+                <Text style={styles.color_textPrivate}>{" "}and</Text>
+                <Text style={[styles.color_textPrivate, {fontWeight: 'bold'}]}>{" "}Privacy policy</Text>
+            </View>
+            <View style={styles.button}>
                 <TouchableOpacity
                     style={styles.signIn}
-                    onPress={()=>login(data.username,data.password)}
+                    onPress={()=>signup(data.username,data.password,data.confirm_password)}
                 >
                 <LinearGradient
                     colors={['#445BFB', '#01ab9d']}
@@ -217,12 +225,12 @@ const SignInScreen = ({navigation}) => {
                 >
                     <Text style={[styles.textSign, {
                         color:'#fff'
-                    }]}>Sign In</Text>
+                    }]}>Sign Up</Text>
                 </LinearGradient>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    onPress={() => navigation.push("Signup")}
+                    onPress={() => navigation.replace("Login")}
                     style={[styles.signIn, {
                         borderColor: '#009387',
                         borderWidth: 1,
@@ -231,7 +239,7 @@ const SignInScreen = ({navigation}) => {
                 >
                     <Text style={[styles.textSign, {
                         color: '#009387'
-                    }]}>Sign Up</Text>
+                    }]}>Sign In</Text>
                 </TouchableOpacity>
             </View>
             </ScrollView>
